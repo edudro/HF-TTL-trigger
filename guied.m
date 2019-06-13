@@ -56,28 +56,29 @@ function guied_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for guied
 handles.output = hObject;
 
-# NI-USB settings
-#reset 
+% NI-USB settings
+% reset 
 daq.reset;
-#get device
+% get device
 handles.devices = daq.getDevices;
-#start session
+% start session
 handles.s = daq.createSession('ni');  
-% Set OutputChannel  counter (PulseGeneration)
+% Set OutputChannel  counter (PulseGeneration) PFI 4 (pin 6)  ground pin 11
+% or 14
 [handles.ch,handles.idx] = addCounterOutputChannel(handles.s, 'Dev1', 'ctr0', 'PulseGeneration');
 % Set dutycycle: If duty cycle is big, you might have problems setting high frequencies
 handles.ch.DutyCycle = 0.01;
 
-% Set trigger connection
-[handles.ch,handles.idx] = addTriggerConnection(handles.s,'External',''Dev1/PFI0','StartTrigger');
+% Set trigger connection PFI0 (pin 1) ground pin 5
+[handles.tr,handles.idx] = addTriggerConnection(handles.s,'External','Dev1/PFI0','StartTrigger');
 
-% Set trigger condition property fo 
+% Set trigger condition property  
 handles.c = handles.s.Connections(1);
 handles.c.TriggerCondition = ' RisingEdge'
 %KHz
 
 % Set stimulation time in seconds 
-handles.s.DurationInSeconds = 60;
+handles.s.DurationInSeconds = 10;
 % Setting AnalogueOutput
 %[handles.ch,handles.idx] = addAnalogOutputChannel(handles.s, 'Dev1', 'ao0', 'Voltage');
 
@@ -184,11 +185,9 @@ handles.ch.Frequency = str2double(selectedItem)*1000;
 %display('is continuous true');
 
 %handles.s.IsContinuous = true;
-% Synchronize trigger
 
-handles.s.AutoSynDSA = true;  % i am not sure about this, this is mostly used when you use multiple devices
 % Receive trigger
-dataIn = startForeground(handles.s);  % start trigger 
+dataIn = startForeground(handles.s);  % start trigger , maybe we need a if condition (wait until trigger appears)
 
 % Start sending data to NI-USB 
 handles.s.startBackground;
